@@ -5,6 +5,9 @@ import { ContainerBuilder } from "diod";
 import { AllTouristApartmentsSearcher } from "../../../tourism/tourist-apartments/application/search-all/AllTouristApartmentsSearcher";
 import { TouristApartmentRepository } from "../../../tourism/tourist-apartments/domain/TouristApartmentRepository";
 import { PostgresTouristApartmentRepository } from "../../../tourism/tourist-apartments/infrastructure/PostgresTouristApartmentRepository";
+import { AllDistrictsSearcher } from "../../../tourism/districts/application/search-all/AllDistrictsSearcher";
+import { DistrictRepository } from "../../../tourism/districts/domain/DistrictRepository";
+import { PostgresDistrictRepository } from "../../../tourism/districts/infrastructure/PostgresDistrictRepository";
 import { AllTouristHousingsSearcher } from "../../../tourism/tourist-housings/application/search-all/AllTouristHousingsSearcher";
 import { TouristHousingRepository } from "../../../tourism/tourist-housings/domain/TouristHousingRepository";
 import { PostgresTouristHousingRepository } from "../../../tourism/tourist-housings/infrastructure/PostgresTouristHousingRepository";
@@ -25,5 +28,9 @@ builder
 	.use(PostgresTouristHousingRepository);
 
 builder.registerAndUse(AllTouristHousingsSearcher);
+
+builder.register(DistrictRepository).use(PostgresDistrictRepository);
+
+builder.registerAndUse(AllDistrictsSearcher);
 
 export const container = builder.build();

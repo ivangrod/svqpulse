@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
+import DistrictLayer from "./district-layer";
 import TouristApartmentLayer from "./tourist-apartment-layer";
 import TouristHousingLayer from "./tourist-housing-layer";
 
@@ -21,6 +22,7 @@ export default function SevilleMap(): ReactElement {
 				attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 				url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 			/>
+			<DistrictLayer />
 			<TouristApartmentLayer />
 			<TouristHousingLayer />
 		</MapContainer>
