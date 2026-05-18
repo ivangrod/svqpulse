@@ -1,7 +1,7 @@
 export interface TouristHousingPrimitives {
 	id: string;
 	registrationCode: string;
-	name: string;
+	name: string | null;
 	latitude: number;
 	longitude: number;
 }
@@ -10,7 +10,7 @@ export class TouristHousing {
 	constructor(
 		private readonly id: string,
 		private readonly registrationCode: string,
-		private readonly name: string,
+		private readonly name: string | null,
 		private readonly latitude: number,
 		private readonly longitude: number,
 	) {}

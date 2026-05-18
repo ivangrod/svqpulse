@@ -10,7 +10,7 @@ CREATE TABLE tourist_housings (
     registration_code TEXT NOT NULL
         CONSTRAINT chk__tourist_housings__registration_code__max_length
             CHECK (length(registration_code) <= 20),
-    name TEXT NOT NULL
+    name TEXT
         CONSTRAINT chk__tourist_housings__name__max_length
             CHECK (length(name) <= 300),
     activity TEXT NOT NULL

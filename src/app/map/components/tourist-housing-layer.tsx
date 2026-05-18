@@ -7,7 +7,7 @@ import { Marker, Popup, useMap } from "react-leaflet";
 interface TouristHousingData {
 	id: string;
 	registrationCode: string;
-	name: string;
+	name: string | null;
 	latitude: number;
 	longitude: number;
 }
@@ -93,7 +93,7 @@ export default function TouristHousingLayer(): ReactElement {
 					icon={housingIcon}
 				>
 					<Popup>
-						<strong>{housing.name}</strong>
+						<strong>{housing.name ?? housing.registrationCode}</strong>
 						<br />
 						<span style={{ fontSize: "0.85em", color: "#555" }}>
 							{housing.registrationCode}
