@@ -1,8 +1,10 @@
 "use client";
 
 import L from "leaflet";
+import "leaflet.markercluster";
+import "leaflet.markercluster/dist/MarkerCluster.css";
 import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
-import { Marker, Popup, useMap } from "react-leaflet";
+import { useMap } from "react-leaflet";
 
 interface TouristApartmentData {
 	id: string;
@@ -12,21 +14,41 @@ interface TouristApartmentData {
 	longitude: number;
 }
 
-const apartmentIcon = new L.Icon({
-	iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-	iconRetinaUrl:
-		"https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-	shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-	iconSize: [25, 41],
-	iconAnchor: [12, 41],
-	popupAnchor: [1, -34],
-	shadowSize: [41, 41],
-});
+const apartmentMarkerStyle: L.CircleMarkerOptions = {
+	radius: 7,
+	fillColor: "#3b82f6",
+	color: "#2563eb",
+	weight: 2,
+	opacity: 1,
+	fillOpacity: 0.8,
+};
+
+function createClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
+	const count = cluster.getChildCount();
+	let size: "sm" | "md" | "lg";
+
+	if (count < 50) {
+		size = "sm";
+	} else if (count < 200) {
+		size = "md";
+	} else {
+		size = "lg";
+	}
+
+	const px = size === "sm" ? 30 : size === "md" ? 40 : 50;
+
+	return new L.DivIcon({
+		html: `<div class="cluster-icon cluster-icon--${size} cluster-icon--apartment">${count}</div>`,
+		className: "",
+		iconSize: new L.Point(px, px),
+	});
+}
 
 export default function TouristApartmentLayer(): ReactElement {
 	const [visible, setVisible] = useState(false);
 	const [apartments, setApartments] = useState<TouristApartmentData[]>([]);
 	const fetchedRef = useRef(false);
+	const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
 	const map = useMap();
 
 	const toggle = useCallback(() => {
@@ -48,6 +70,58 @@ export default function TouristApartmentLayer(): ReactElement {
 				fetchedRef.current = false;
 			});
 	}, [visible]);
+
+	useEffect(() => {
+		if (!visible) {
+			if (clusterGroupRef.current) {
+				map.removeLayer(clusterGroupRef.current);
+				clusterGroupRef.current = null;
+			}
+
+			return;
+		}
+
+		if (apartments.length === 0) {
+			return;
+		}
+
+		const clusterGroup = L.markerClusterGroup({
+			disableClusteringAtZoom: 18,
+			maxClusterRadius: 80,
+			spiderfyOnMaxZoom: false,
+			showCoverageOnHover: false,
+			chunkedLoading: true,
+			removeOutsideVisibleBounds: true,
+			animate: false,
+			iconCreateFunction: createClusterIcon,
+		});
+
+		const markers = apartments.map((apt) => {
+			const marker = L.circleMarker(
+				[apt.latitude, apt.longitude],
+				apartmentMarkerStyle,
+			);
+
+			marker.on("click", () => {
+				marker
+					.bindPopup(
+						`<strong>${apt.name}</strong><br/><span style="font-size:0.85em;color:#555">${apt.registrationCode}</span>`,
+					)
+					.openPopup();
+			});
+
+			return marker;
+		});
+
+		clusterGroup.addLayers(markers);
+		map.addLayer(clusterGroup);
+		clusterGroupRef.current = clusterGroup;
+
+		return () => {
+			map.removeLayer(clusterGroup);
+			clusterGroupRef.current = null;
+		};
+	}, [visible, apartments, map]);
 
 	useEffect(() => {
 		const control = new L.Control({ position: "topright" });
@@ -80,27 +154,5 @@ export default function TouristApartmentLayer(): ReactElement {
 		};
 	}, [map, toggle]);
 
-	if (!visible) {
-		return <></>;
-	}
-
-	return (
-		<>
-			{apartments.map((apt) => (
-				<Marker
-					key={apt.id}
-					position={[apt.latitude, apt.longitude]}
-					icon={apartmentIcon}
-				>
-					<Popup>
-						<strong>{apt.name}</strong>
-						<br />
-						<span style={{ fontSize: "0.85em", color: "#555" }}>
-							{apt.registrationCode}
-						</span>
-					</Popup>
-				</Marker>
-			))}
-		</>
-	);
+	return <></>;
 }
